@@ -9,6 +9,10 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         html, body {
@@ -591,9 +595,26 @@
     </div>
 
     <script>
+        // --- BLOQUEIO DE INSPECIONAR / BOTÃO DIREITO ---
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+                (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's'))
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
         let debugMode = false;
         let puzzleConcluido31 = false;
         let caixaCorretaMaca = 1;
+        let bloqueioCliques = false; // TRAVA DE SEGURANÇA CONTRA CLIQUE RÁPIDO
 
         // CRONOGRAMA DAS LIBERAÇÕES
         const CRONOGRAMA = {
@@ -627,7 +648,6 @@
         const URL_DESKTOP_OVERLAY = "https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/Overlay.png";
         const URL_MOBILE_OVERLAY  = "https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/OverlayMobile.png";
 
-        // URLS DAS TELAS DE FUNDO DA CHARADA (DESKTOP E MOBILE NOVA)
         const URL_CHARADA_DESKTOP = "https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/Tela1_2.png";
         const URL_CHARADA_MOBILE  = "https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/TelaMobileNova.png"; 
 
@@ -805,6 +825,8 @@
                 document.getElementById(`box${i}`).classList.remove('correct-box');
                 document.getElementById(`icon${i}`).innerText = "📦";
             });
+
+            bloqueioCliques = false; // LIBERA OS CLIQUES NOVAMENTE APÓS EMBARALHAR
         }
 
         function abrirMapa() { 
@@ -816,12 +838,13 @@
         }
 
         function escolherCaixa(numeroCaixa) {
-            if (puzzleConcluido31) return;
+            if (puzzleConcluido31 || bloqueioCliques) return; // BLOQUEIA SE JÁ ESTIVER TRAVADO
 
             const feedback = document.getElementById('feedback');
 
             if (numeroCaixa === caixaCorretaMaca) {
                 puzzleConcluido31 = true;
+                bloqueioCliques = true;
 
                 document.getElementById(`box${numeroCaixa}`).classList.add('correct-box');
                 document.getElementById(`icon${numeroCaixa}`).innerText = "🍎";
@@ -831,6 +854,7 @@
 
                 document.getElementById('rewardBox').style.display = "flex";
             } else {
+                bloqueioCliques = true; // ATIVA A TRAVA IMEDIATAMENTE AO ERRAR
                 document.getElementById(`icon${numeroCaixa}`).innerText = "❌";
                 feedback.className = "feedback-msg erro";
                 feedback.innerText = "❌ A caixa está vazia! A dedução falhou.";
