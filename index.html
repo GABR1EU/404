@@ -421,6 +421,54 @@
         .feedback-msg.sucesso { color: #27ae60; }
         .feedback-msg.erro { color: #c0392b; }
 
+        /* --- POP-UP CUSTOMIZADO DE AVISO / BLOQUEIO --- */
+        .custom-alert-box {
+            background: #fff;
+            border: 4px solid #000;
+            border-radius: 18px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90vw;
+            text-align: center;
+            box-shadow: 0 8px 0 #000;
+            animation: popIn 0.25s ease-out;
+            position: relative;
+            z-index: 300;
+        }
+
+        .custom-alert-icon {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+        }
+
+        .custom-alert-text {
+            color: #000;
+            font-size: 1.05rem;
+            font-weight: 900;
+            line-height: 1.4;
+            margin-bottom: 18px;
+        }
+
+        .custom-alert-btn {
+            background: #e63946;
+            color: #fff;
+            border: 3.5px solid #000;
+            border-radius: 12px;
+            padding: 10px 28px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #000;
+            transition: transform 0.15s ease;
+        }
+
+        .custom-alert-btn:hover {
+            transform: scale(1.05);
+            background: #ffb703;
+            color: #000;
+        }
+
         /* =========================================================
            📱 ADAPTAÇÃO PARA DISPOSITIVOS MÓVEIS (RETRATO 9:16)
            ========================================================= */
@@ -579,6 +627,15 @@
 
                 <div id="feedback" class="feedback-msg"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- POPUP 3: AVISO CUSTOMIZADO DE BLOQUEIO -->
+    <div id="modalAvisoCustom" class="overlay-screen">
+        <div class="custom-alert-box">
+            <div class="custom-alert-icon">🔒</div>
+            <div id="customAlertText" class="custom-alert-text">Este enigma ainda está bloqueado! Aguarde a data de liberação.</div>
+            <button class="custom-alert-btn" onclick="fecharAvisoCustom()">ENTENDIDO</button>
         </div>
     </div>
 
@@ -769,12 +826,10 @@
                 const liberado = debugMode || (hoje >= CRONOGRAMA[dia]?.dataLiberacao);
 
                 if (debugMode) {
-                    // NO DEBUG MODE: MOSTRA TODOS OS PINOS SEM CADEADO E SEM ALFINETE
                     pinEl.classList.add('visible');
                     pinEl.classList.remove('bloqueado');
                     pinEl.innerHTML = `<span class="pin-label">DIA ${dia < 10 ? '0'+dia : dia}</span>`;
                 } else if (dia === 1) {
-                    // MODO NORMAL: APENAS DIA 1 VISÍVEL (EXIBE CADEADO SE ESTIVER BLOQUEADO)
                     pinEl.classList.add('visible');
                     if (liberado) {
                         pinEl.classList.remove('bloqueado');
@@ -784,7 +839,6 @@
                         pinEl.innerHTML = `<span class="pin-label">BLOQUEADO</span>🔒`;
                     }
                 } else {
-                    // OUTROS DIAS FICA OCULTOS EM MODO NORMAL
                     pinEl.classList.remove('visible');
                 }
             });
@@ -829,6 +883,15 @@
             document.getElementById('modalMapa').classList.remove('active'); 
         }
 
+        function exibirAvisoCustom(mensagem) {
+            document.getElementById('customAlertText').innerText = mensagem;
+            document.getElementById('modalAvisoCustom').classList.add('active');
+        }
+
+        function fecharAvisoCustom() {
+            document.getElementById('modalAvisoCustom').classList.remove('active');
+        }
+
         function escolherCaixa(numeroCaixa) {
             if (puzzleConcluido1 || bloqueioCliques) return;
 
@@ -863,7 +926,7 @@
             const liberado = debugMode || (hoje >= CRONOGRAMA[dia]?.dataLiberacao);
 
             if (!liberado) {
-                alert("🔒 Este enigma ainda está bloqueado! Aguarde a data de liberação.");
+                exibirAvisoCustom("Este enigma ainda está bloqueado! Aguarde a data de liberação.");
                 return;
             }
 
