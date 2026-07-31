@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br" oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+<html lang="pt-br" oncontextmenu="return false;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -67,7 +67,7 @@
             object-fit: cover;
             object-position: center;
             display: block;
-            pointer-events: none; /* Impede arrastar a imagem */
+            pointer-events: none;
         }
 
         .mapa-hover-highlight {
@@ -829,7 +829,7 @@
                 document.getElementById(`icon${i}`).innerText = "📦";
             });
 
-            bloqueioCliques = false;
+            bloqueioCliques = false; // LIBERA NOVAMENTE APÓS O EMBARALHAMENTO COMPLETO
         }
 
         function abrirMapa() { 
@@ -841,13 +841,14 @@
         }
 
         function escolherCaixa(numeroCaixa) {
+            // BLOQUEIA SE JÁ ESTIVER CONCLUÍDO OU SE HOUVER CLIQUE EM ANDAMENTO
             if (puzzleConcluido31 || bloqueioCliques) return;
 
+            bloqueioCliques = true; // TRAVA IMEDIATAMENTE QUALQUER NOVO CLIQUE
             const feedback = document.getElementById('feedback');
 
             if (numeroCaixa === caixaCorretaMaca) {
                 puzzleConcluido31 = true;
-                bloqueioCliques = true;
 
                 document.getElementById(`box${numeroCaixa}`).classList.add('correct-box');
                 document.getElementById(`icon${numeroCaixa}`).innerText = "🍎";
@@ -857,7 +858,6 @@
 
                 document.getElementById('rewardBox').style.display = "flex";
             } else {
-                bloqueioCliques = true;
                 document.getElementById(`icon${numeroCaixa}`).innerText = "❌";
                 feedback.className = "feedback-msg erro";
                 feedback.innerText = "❌ A caixa está vazia! A dedução falhou.";
