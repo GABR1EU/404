@@ -37,7 +37,7 @@
             pointer-events: none;
         }
 
-        /* --- PALCO PRINCIPAL (TELA CHEIA) --- */
+        /* --- PALCO PRINCIPAL --- */
         .stage {
             width: 100vw;
             height: 100vh;
@@ -59,25 +59,21 @@
         .mural-img-bg {
             width: 100vw;
             height: 100vh;
-            object-fit: cover; /* Preenche 100% da tela sem bordas */
+            object-fit: cover;
+            object-position: center;
             display: block;
         }
 
+        /* OVERLAY SEM EFEITOS VISUAIS / SEM HOVER */
         .mapa-hover-highlight {
             position: absolute;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             object-fit: cover;
+            object-position: center;
             cursor: pointer;
             opacity: 0; 
-            transition: opacity 0.3s ease, filter 0.3s ease;
-            filter: drop-shadow(0 0 16px rgba(230, 57, 70, 0.7));
             z-index: 5;
-        }
-
-        .mapa-hover-highlight:hover {
-            opacity: 0.65;
-            filter: drop-shadow(0 0 20px rgba(230, 57, 70, 0.85)) brightness(1.05);
         }
 
         /* --- POPUPS / OVERLAYS --- */
@@ -140,6 +136,7 @@
             display: block;
         }
 
+        /* PINOS INTERATIVOS */
         .pin-point {
             position: absolute;
             width: 44px;
@@ -149,31 +146,24 @@
             cursor: pointer;
             transform: translate(-50%, -50%);
             transition: transform 0.2s, background-color 0.2s;
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             font-size: 1rem;
             z-index: 10;
-        }
-
-        .pin-point.unlocked {
             background-color: #e63946;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 4px 0 #000;
             animation: pulsePin 2s infinite;
         }
 
-        .pin-point.unlocked:hover {
+        .pin-point.visible {
+            display: flex !important;
+        }
+
+        .pin-point:hover {
             transform: translate(-50%, -50%) scale(1.3);
             background-color: #ffb703;
             animation: none;
-        }
-
-        .pin-point.locked {
-            background-color: #555;
-            border-color: #222;
-            cursor: not-allowed;
-            box-shadow: 0 4px 0 #000;
-            opacity: 0.85;
         }
 
         .pin-label {
@@ -394,6 +384,20 @@
                 aspect-ratio: 9 / 16;
             }
 
+            .pin-point {
+                width: 30px;
+                height: 30px;
+                border: 2.5px solid #000;
+                box-shadow: 0 0 6px rgba(255, 255, 255, 0.7), 0 3px 0 #000;
+            }
+
+            .pin-label {
+                top: 34px;
+                font-size: 0.75rem;
+                padding: 2px 8px;
+                border-radius: 6px;
+            }
+
             .charada-modal-box {
                 aspect-ratio: 9 / 16;
                 max-height: 90vh;
@@ -459,7 +463,7 @@
         </div>
     </div>
 
-    <!-- POPUP 1: MAPA EXPANDIDO -->
+    <!-- POPUP 1: MAPA EXPANDIDO (4 PINOS) -->
     <div id="modalMapa" class="overlay-screen">
         <div class="mapa-modal-container">
             <button class="close-btn" onclick="fecharMapa()">&times;</button>
@@ -475,6 +479,10 @@
 
             <div id="pin2" class="pin-point" onclick="tentarAbrirCharada(2)">
                 <span class="pin-label">DIA 02</span>
+            </div>
+
+            <div id="pin3" class="pin-point" onclick="tentarAbrirCharada(3)">
+                <span class="pin-label">DIA 03</span>
             </div>
         </div>
     </div>
@@ -531,10 +539,12 @@
         let puzzleConcluido31 = false;
         let caixaCorretaMaca = 1;
 
+        // CRONOGRAMA DAS LIBERAÇÕES
         const CRONOGRAMA = {
             31: { dataLiberacao: "2026-07-31" },
             1:  { dataLiberacao: "2026-08-01" },
-            2:  { dataLiberacao: "2026-08-02" }
+            2:  { dataLiberacao: "2026-08-02" },
+            3:  { dataLiberacao: "2026-08-03" }
         };
 
         const CHARADAS = {
@@ -545,9 +555,14 @@
                 respostas: ["livro", "livros"]
             },
             2: {
-                titulo: "📍 DIA 02 - O MISTÉRIO FINAL",
+                titulo: "📍 DIA 02 - O MISTÉRIO CONTINUA",
                 subtexto: "Faço o trem andar nos trilhos da cidade, mas sem eletricidade fico no escuro. Qual o local?",
                 respostas: ["usina", "usinas"]
+            },
+            3: {
+                titulo: "📍 DIA 03 - BIBLIOTECA DE VERADE",
+                subtexto: "Digite aqui a palavra final para concluir a investigação.",
+                respostas: ["segredo", "revelacao"]
             }
         };
 
@@ -602,7 +617,6 @@
         let diaAtualAberto = null;
 
         function adaptarLayoutTela() {
-            // Garante Mobile APENAS se a tela for menor que 600px E estiver no formato retrato
             const eMobileReal = (window.innerWidth <= 600) && (window.innerHeight > window.innerWidth);
 
             const bgImg = document.getElementById('muralBgImg');
@@ -612,6 +626,7 @@
             const pin31 = document.getElementById('pin31');
             const pin1 = document.getElementById('pin1');
             const pin2 = document.getElementById('pin2');
+            const pin3 = document.getElementById('pin3');
 
             if (eMobileReal) {
                 bgImg.src = "TelaInicialMobile.png";
@@ -621,6 +636,7 @@
                 pin31.style.top = "32%"; pin31.style.left = "30%";
                 pin1.style.top = "48%";  pin1.style.left = "65%";
                 pin2.style.top = "70%";  pin2.style.left = "38%";
+                pin3.style.top = "51%";  pin3.style.left = "50%";
             } else {
                 bgImg.src = "TelaInicial.png";
                 overlayImg.src = "Overlay.png";
@@ -629,6 +645,7 @@
                 pin31.style.top = "36%"; pin31.style.left = "31%";
                 pin1.style.top = "48%";  pin1.style.left = "51%";
                 pin2.style.top = "74%";  pin2.style.left = "35%";
+                pin3.style.top = "48%";  pin3.style.left = "51%";
             }
         }
 
@@ -641,23 +658,17 @@
         function atualizarStatusPinos() {
             const hoje = getHojeBR();
 
-            [31, 1, 2].forEach(dia => {
+            [31, 1, 2, 3].forEach(dia => {
                 const pinEl = document.getElementById(`pin${dia}`);
                 const liberado = debugMode || (hoje >= CRONOGRAMA[dia].dataLiberacao);
 
                 if (liberado) {
-                    pinEl.className = "pin-point unlocked";
+                    pinEl.classList.add('visible');
                     pinEl.innerHTML = `<span class="pin-label">DIA ${dia < 10 ? '0'+dia : dia}</span>`;
                 } else {
-                    pinEl.className = "pin-point locked";
-                    pinEl.innerHTML = `🔒<span class="pin-label">DISPONÍVEL EM ${formataDataBR(CRONOGRAMA[dia].dataLiberacao)}</span>`;
+                    pinEl.classList.remove('visible');
                 }
             });
-        }
-
-        function formataDataBR(dataIso) {
-            const p = dataIso.split('-');
-            return `${p[2]}/${p[1]}`;
         }
 
         function embaralharPuzzle() {
@@ -714,39 +725,28 @@
         }
 
         function tentarAbrirCharada(dia) {
-            const hoje = getHojeBR();
-            const liberado = debugMode || (hoje >= CRONOGRAMA[dia].dataLiberacao);
-
             diaAtualAberto = dia;
             const feedback = document.getElementById('feedback');
             feedback.innerText = "";
             feedback.className = "feedback-msg";
 
-            if (liberado) {
-                const dados = CHARADAS[dia];
-                document.getElementById('charadaTitulo').innerText = dados.titulo;
+            const dados = CHARADAS[dia];
+            document.getElementById('charadaTitulo').innerText = dados.titulo;
 
-                if (dia === 31) {
-                    document.getElementById('ruleBadge').style.display = "block";
-                    document.getElementById('puzzleCaixas').style.display = "flex";
-                    document.getElementById('areaResposta').style.display = "none";
-                    if (!puzzleConcluido31) {
-                        document.getElementById('rewardBox').style.display = "none";
-                        embaralharPuzzle();
-                    }
-                } else {
-                    document.getElementById('ruleBadge').style.display = "none";
-                    document.getElementById('puzzleCaixas').style.display = "none";
+            if (dia === 31) {
+                document.getElementById('ruleBadge').style.display = "block";
+                document.getElementById('puzzleCaixas').style.display = "flex";
+                document.getElementById('areaResposta').style.display = "none";
+                if (!puzzleConcluido31) {
                     document.getElementById('rewardBox').style.display = "none";
-                    document.getElementById('areaResposta').style.display = "flex";
-                    document.getElementById('inputResposta').value = "";
+                    embaralharPuzzle();
                 }
             } else {
-                document.getElementById('charadaTitulo').innerText = `🔒 PISTA BLOQUEADA`;
                 document.getElementById('ruleBadge').style.display = "none";
                 document.getElementById('puzzleCaixas').style.display = "none";
                 document.getElementById('rewardBox').style.display = "none";
-                document.getElementById('areaResposta').style.display = "none";
+                document.getElementById('areaResposta').style.display = "flex";
+                document.getElementById('inputResposta').value = "";
             }
 
             document.getElementById('modalCharada').classList.add('active');
