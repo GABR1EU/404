@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br" oncontextmenu="return false;">
+<html lang="pt-br" oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -160,7 +160,7 @@
             display: none;
             justify-content: center;
             align-items: center;
-            font-size: 1rem;
+            font-size: 1.1rem;
             z-index: 10;
             background-color: #e63946;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 4px 0 #000;
@@ -169,6 +169,12 @@
 
         .pin-point.visible {
             display: flex !important;
+        }
+
+        .pin-point.bloqueado {
+            background-color: #4a4e69 !important;
+            border-color: #000 !important;
+            animation: none !important;
         }
 
         .pin-point:hover {
@@ -197,7 +203,7 @@
             50% { box-shadow: 0 0 16px rgba(255, 255, 255, 0.9), 0 4px 0 #000; }
         }
 
-        /* --- TELA DA CHARADA (PADRÃO DESKTOP) --- */
+        /* --- TELA DA CHARADA --- */
         .charada-modal-box {
             position: relative;
             width: 96vw;
@@ -274,18 +280,9 @@
             color: #ffffff !important;
         }
 
-        .box-azul { 
-            background: #3a86ff; 
-            transform: rotate(-1.2deg); 
-        }
-        .box-vermelha { 
-            background: #e63946; 
-            transform: rotate(0.8deg); 
-        }
-        .box-verde { 
-            background: #2ecc71; 
-            transform: rotate(-0.8deg); 
-        }
+        .box-azul { background: #3a86ff; transform: rotate(-1.2deg); }
+        .box-vermelha { background: #e63946; transform: rotate(0.8deg); }
+        .box-verde { background: #2ecc71; transform: rotate(-0.8deg); }
 
         .box-card:hover {
             transform: translateY(-6px) scale(1.03) rotate(0deg) !important;
@@ -526,27 +523,15 @@
         </div>
     </div>
 
-    <!-- POPUP 1: MAPA EXPANDIDO (4 PINOS) -->
+    <!-- POPUP 1: MAPA EXPANDIDO -->
     <div id="modalMapa" class="overlay-screen">
         <div class="mapa-modal-container">
             <button class="close-btn" onclick="fecharMapa()">&times;</button>
             <img id="modalMapaImg" src="https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/Overlay.png" alt="Mapa de Verade" class="mapa-modal-img">
 
-            <div id="pin31" class="pin-point" onclick="tentarAbrirCharada(31)">
-                <span class="pin-label">DIA 31</span>
-            </div>
-
-            <div id="pin1" class="pin-point" onclick="tentarAbrirCharada(1)">
-                <span class="pin-label">DIA 01</span>
-            </div>
-
-            <div id="pin2" class="pin-point" onclick="tentarAbrirCharada(2)">
-                <span class="pin-label">DIA 02</span>
-            </div>
-
-            <div id="pin3" class="pin-point" onclick="tentarAbrirCharada(3)">
-                <span class="pin-label">DIA 03</span>
-            </div>
+            <div id="pin1" class="pin-point" onclick="tentarAbrirCharada(1)"></div>
+            <div id="pin2" class="pin-point" onclick="tentarAbrirCharada(2)"></div>
+            <div id="pin3" class="pin-point" onclick="tentarAbrirCharada(3)"></div>
         </div>
     </div>
 
@@ -556,7 +541,7 @@
             <button class="close-btn" onclick="fecharCharada()">&times;</button>
 
             <div class="charada-content-overlay">
-                <h2 id="charadaTitulo" class="charada-titulo">DIA 31 - CASO SECRETO</h2>
+                <h2 id="charadaTitulo" class="charada-titulo">DIA 01 - CASO SECRETO</h2>
                 
                 <div id="ruleBadge" class="rule-badge" style="display: none;">
                     ⚠️ REGRA: ENCONTRE A CAIXA COM A MAÇÃ, SABENDO QUE PELO MENOS 1 FALA MENTIRA E 1 FALA VERDADE
@@ -615,25 +600,19 @@
         });
 
         let debugMode = false;
-        let puzzleConcluido31 = false;
+        let puzzleConcluido1 = false;
         let caixaCorretaMaca = 1;
         let bloqueioCliques = false;
 
-        // CRONOGRAMA DAS LIBERAÇÕES
+        // CRONOGRAMA DE LIBERAÇÕES DOS DIAS
         const CRONOGRAMA = {
-            31: { dataLiberacao: "2026-07-31" },
-            1:  { dataLiberacao: "2026-08-01" },
-            2:  { dataLiberacao: "2026-08-02" },
-            3:  { dataLiberacao: "2026-08-03" }
+            1: { dataLiberacao: "2026-08-01" },
+            2: { dataLiberacao: "2026-08-02" },
+            3: { dataLiberacao: "2026-08-03" }
         };
 
         const CHARADAS = {
-            31: { titulo: "📍 DIA 31 - O ENIGMA DAS CAIXAS" },
-            1: {
-                titulo: "📍 DIA 01 - A SEGUNDA PISTA",
-                subtexto: "Guardo histórias sem falar uma palavra, fico quieto no Verade esperando alguém me folhear. Quem sou?",
-                respostas: ["livro", "livros"]
-            },
+            1: { titulo: "📍 DIA 01 - O ENIGMA DAS CAIXAS" },
             2: {
                 titulo: "📍 DIA 02 - O MISTÉRIO CONTINUA",
                 subtexto: "Faço o trem andar nos trilhos da cidade, mas sem eletricidade fico no escuro. Qual o local?",
@@ -654,7 +633,7 @@
         const URL_CHARADA_DESKTOP = "https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/Tela1_2.png";
         const URL_CHARADA_MOBILE  = "https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/TelaMobileNova.png"; 
 
-        // 86 PUZZLES AUDITADOS
+        // BANCO DE 86 ENIGMAS DE LÓGICA
         const DB_PUZZLES = [
             {"statement1": "Uma caixa ao lado desta caixa contém a maçã.", "statement2": "As duas caixas ao lado desta contêm a maçã.", "statement3": "Uma caixa ao lado desta caixa é verdadeira.", "correct": 2},
             {"statement1": "Uma caixa ao lado desta caixa contém a maçã.", "statement2": "", "statement3": "Uma caixa ao lado desta caixa exibe uma afirmação falsa.", "correct": 2},
@@ -737,6 +716,7 @@
             {"statement1": "Há duas declarações nesta caixa.", "statement2": "Há duas declarações nesta caixa.", "statement3": "Há duas declarações nesta caixa.", "correct": 3},
             {"statement1": "Ambas são falsas.", "statement2": "A maçã está em uma caixa sem nenhuma afirmação verdadeira.", "statement3": "", "correct": 3},
             {"statement1": "Não existe nenhuma caixa que contenha uma mistura de afirmações verdadeiras e falsas.", "statement2": "Não há nenhuma caixa que mencione uma cor específica.", "statement3": "Não há nenhuma caixa entre duas caixas vazias.", "correct": 2},
+            {"statement1": "Não existe nenhuma caixa que exiba 3 afirmações falsas.", "statement2": "Não existe nenhuma caixa que exiba 3 afirmações verdadeiras.", "statement3": "Não existe nenhuma caixa que contenha uma declaração com menos de 8 palavras.", "correct": 2},
             {"statement1": "Não existe nenhuma caixa que exiba um número que também apareça em outra caixa.", "statement2": "", "statement3": "Não existe nenhuma caixa que exiba exatamente uma declaração verdadeira.", "correct": 2}
         ];
 
@@ -750,7 +730,6 @@
             const modalMapaImg = document.getElementById('modalMapaImg');
             const charadaBox = document.getElementById('charadaBox');
 
-            const pin31 = document.getElementById('pin31');
             const pin1 = document.getElementById('pin1');
             const pin2 = document.getElementById('pin2');
             const pin3 = document.getElementById('pin3');
@@ -761,20 +740,18 @@
                 modalMapaImg.src = URL_MOBILE_OVERLAY;
                 charadaBox.style.backgroundImage = `url('${URL_CHARADA_MOBILE}')`;
 
-                pin31.style.top = "32%"; pin31.style.left = "30%";
-                pin1.style.top = "48%";  pin1.style.left = "65%";
-                pin2.style.top = "70%";  pin2.style.left = "38%";
-                pin3.style.top = "51%";  pin3.style.left = "50%";
+                pin1.style.top = "32%"; pin1.style.left = "30%";
+                pin2.style.top = "48%"; pin2.style.left = "65%";
+                pin3.style.top = "70%"; pin3.style.left = "38%";
             } else {
                 bgImg.src = URL_DESKTOP_BG;
                 overlayImg.src = URL_DESKTOP_OVERLAY;
                 modalMapaImg.src = URL_DESKTOP_OVERLAY;
                 charadaBox.style.backgroundImage = `url('${URL_CHARADA_DESKTOP}')`;
 
-                pin31.style.top = "36%"; pin31.style.left = "31%";
-                pin1.style.top = "48%";  pin1.style.left = "51%";
-                pin2.style.top = "74%";  pin2.style.left = "35%";
-                pin3.style.top = "48%";  pin3.style.left = "51%";
+                pin1.style.top = "36%"; pin1.style.left = "31%";
+                pin2.style.top = "48%"; pin2.style.left = "51%";
+                pin3.style.top = "74%"; pin3.style.left = "35%";
             }
         }
 
@@ -787,14 +764,27 @@
         function atualizarStatusPinos() {
             const hoje = getHojeBR();
 
-            [31, 1, 2, 3].forEach(dia => {
+            [1, 2, 3].forEach(dia => {
                 const pinEl = document.getElementById(`pin${dia}`);
-                const liberado = debugMode || (hoje >= CRONOGRAMA[dia].dataLiberacao);
+                const liberado = debugMode || (hoje >= CRONOGRAMA[dia]?.dataLiberacao);
 
-                if (liberado) {
+                if (debugMode) {
+                    // NO DEBUG MODE: MOSTRA TODOS OS PINOS SEM CADEADO E SEM ALFINETE
                     pinEl.classList.add('visible');
+                    pinEl.classList.remove('bloqueado');
                     pinEl.innerHTML = `<span class="pin-label">DIA ${dia < 10 ? '0'+dia : dia}</span>`;
+                } else if (dia === 1) {
+                    // MODO NORMAL: APENAS DIA 1 VISÍVEL (EXIBE CADEADO SE ESTIVER BLOQUEADO)
+                    pinEl.classList.add('visible');
+                    if (liberado) {
+                        pinEl.classList.remove('bloqueado');
+                        pinEl.innerHTML = `<span class="pin-label">DIA 01</span>`;
+                    } else {
+                        pinEl.classList.add('bloqueado');
+                        pinEl.innerHTML = `<span class="pin-label">BLOQUEADO</span>🔒`;
+                    }
                 } else {
+                    // OUTROS DIAS FICA OCULTOS EM MODO NORMAL
                     pinEl.classList.remove('visible');
                 }
             });
@@ -802,7 +792,7 @@
 
         /* RANDOMIZADOR COMPLETO DAS CAIXAS */
         function embaralharPuzzle() {
-            if (puzzleConcluido31) return;
+            if (puzzleConcluido1) return;
 
             const index = Math.floor(Math.random() * DB_PUZZLES.length);
             const puzzle = DB_PUZZLES[index];
@@ -828,7 +818,7 @@
                 document.getElementById(`icon${i}`).innerText = "📦";
             });
 
-            bloqueioCliques = false; // LIBERA NOVAMENTE APÓS O EMBARALHAMENTO COMPLETO
+            bloqueioCliques = false;
         }
 
         function abrirMapa() { 
@@ -840,14 +830,13 @@
         }
 
         function escolherCaixa(numeroCaixa) {
-            // BLOQUEIA SE JÁ ESTIVER CONCLUÍDO OU SE HOUVER CLIQUE EM ANDAMENTO
-            if (puzzleConcluido31 || bloqueioCliques) return;
+            if (puzzleConcluido1 || bloqueioCliques) return;
 
-            bloqueioCliques = true; // TRAVA IMEDIATAMENTE QUALQUER NOVO CLIQUE
+            bloqueioCliques = true;
             const feedback = document.getElementById('feedback');
 
             if (numeroCaixa === caixaCorretaMaca) {
-                puzzleConcluido31 = true;
+                puzzleConcluido1 = true;
 
                 document.getElementById(`box${numeroCaixa}`).classList.add('correct-box');
                 document.getElementById(`icon${numeroCaixa}`).innerText = "🍎";
@@ -870,6 +859,14 @@
         }
 
         function tentarAbrirCharada(dia) {
+            const hoje = getHojeBR();
+            const liberado = debugMode || (hoje >= CRONOGRAMA[dia]?.dataLiberacao);
+
+            if (!liberado) {
+                alert("🔒 Este enigma ainda está bloqueado! Aguarde a data de liberação.");
+                return;
+            }
+
             diaAtualAberto = dia;
             const feedback = document.getElementById('feedback');
             feedback.innerText = "";
@@ -878,11 +875,11 @@
             const dados = CHARADAS[dia];
             document.getElementById('charadaTitulo').innerText = dados.titulo;
 
-            if (dia === 31) {
+            if (dia === 1) {
                 document.getElementById('ruleBadge').style.display = "block";
                 document.getElementById('puzzleCaixas').style.display = "flex";
                 document.getElementById('areaResposta').style.display = "none";
-                if (!puzzleConcluido31) {
+                if (!puzzleConcluido1) {
                     document.getElementById('rewardBox').style.display = "none";
                     embaralharPuzzle();
                 }
