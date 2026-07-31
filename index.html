@@ -12,11 +12,14 @@
         }
 
         html, body {
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background-color: #0b0914;
             font-family: 'Arial Black', Gadget, sans-serif;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #debugBanner {
@@ -35,20 +38,23 @@
             pointer-events: none;
         }
 
-        /* --- PALCO PRINCIPAL (AJUSTADO PARA A NUVEMSHOP) --- */
+        /* --- PALCO PRINCIPAL (DESKTOP PADRÃO) --- */
         .stage {
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
+            padding: 10px;
         }
 
         .mural-wrapper {
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            max-width: 1600px;
+            height: 100%;
+            max-height: 95vh;
+            aspect-ratio: 16 / 9;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -57,7 +63,7 @@
         .mural-img-bg {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Ajusta e enquadra perfeitamente sem esticar */
+            object-fit: contain;
             display: block;
         }
 
@@ -310,7 +316,6 @@
             margin-top: 8px;
         }
 
-        /* RECOMPENSA SECRETA REVELADA */
         .reward-box {
             display: none;
             flex-direction: column;
@@ -342,7 +347,6 @@
             border: 2px solid #000;
         }
 
-        /* CAMPO TRADICIONAL */
         .input-group {
             display: flex;
             flex-direction: column;
@@ -385,9 +389,13 @@
         .feedback-msg.erro { color: #c0392b; }
 
         /* =========================================================
-           📱 REGRAS DE ADAPTAÇÃO PARA DISPOSITIVOS MÓVEIS
+           📱 REGRAS DE ADAPTAÇÃO PARA DISPOSITIVOS MÓVEIS (REAIS)
            ========================================================= */
-        @media (max-width: 768px) {
+        @media (max-width: 600px) and (orientation: portrait) {
+            .mural-wrapper {
+                aspect-ratio: 9 / 16;
+            }
+
             .mapa-modal-container {
                 width: 92vw;
                 max-height: 92vh;
@@ -530,7 +538,6 @@
         let debugMode = false;
         let puzzleConcluido31 = false;
         let caixaCorretaMaca = 1;
-        let isMobile = window.innerWidth <= 768;
 
         const CRONOGRAMA = {
             31: { dataLiberacao: "2026-07-31" },
@@ -603,7 +610,8 @@
         let diaAtualAberto = null;
 
         function adaptarLayoutTela() {
-            isMobile = window.innerWidth <= 768;
+            // Considera mobile apenas se a tela for estreita E vertical
+            const eMobileReal = (window.innerWidth <= 600) && (window.innerHeight > window.innerWidth);
 
             const bgImg = document.getElementById('muralBgImg');
             const overlayImg = document.getElementById('overlayImg');
@@ -613,7 +621,7 @@
             const pin1 = document.getElementById('pin1');
             const pin2 = document.getElementById('pin2');
 
-            if (isMobile) {
+            if (eMobileReal) {
                 bgImg.src = "TelaInicialMobile.png";
                 overlayImg.src = "OverlayMobile.png";
                 modalMapaImg.src = "OverlayMobile.png";
