@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,6 +13,7 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            -webkit-touch-callout: none;
         }
 
         html, body {
@@ -66,6 +67,7 @@
             object-fit: cover;
             object-position: center;
             display: block;
+            pointer-events: none; /* Impede arrastar a imagem */
         }
 
         .mapa-hover-highlight {
@@ -142,6 +144,7 @@
             height: 100%;
             object-fit: contain;
             display: block;
+            pointer-events: none;
         }
 
         /* PINOS INTERATIVOS */
@@ -511,7 +514,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
     <div id="debugBanner">🛠️ DEBUG MODE ATIVO</div>
 
@@ -595,18 +598,18 @@
     </div>
 
     <script>
-        // --- BLOQUEIO DE INSPECIONAR / BOTÃO DIREITO ---
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
+        // --- BLOQUEIO GLOBAL DE BOTÃO DIREITO E ATALHOS ---
+        window.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 
         document.addEventListener('keydown', function(e) {
             if (
                 e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c' || e.key === 'K' || e.key === 'k')) ||
                 (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's'))
             ) {
                 e.preventDefault();
+                e.stopPropagation();
                 return false;
             }
         });
@@ -614,7 +617,7 @@
         let debugMode = false;
         let puzzleConcluido31 = false;
         let caixaCorretaMaca = 1;
-        let bloqueioCliques = false; // TRAVA DE SEGURANÇA CONTRA CLIQUE RÁPIDO
+        let bloqueioCliques = false;
 
         // CRONOGRAMA DAS LIBERAÇÕES
         const CRONOGRAMA = {
@@ -826,7 +829,7 @@
                 document.getElementById(`icon${i}`).innerText = "📦";
             });
 
-            bloqueioCliques = false; // LIBERA OS CLIQUES NOVAMENTE APÓS EMBARALHAR
+            bloqueioCliques = false;
         }
 
         function abrirMapa() { 
@@ -838,7 +841,7 @@
         }
 
         function escolherCaixa(numeroCaixa) {
-            if (puzzleConcluido31 || bloqueioCliques) return; // BLOQUEIA SE JÁ ESTIVER TRAVADO
+            if (puzzleConcluido31 || bloqueioCliques) return;
 
             const feedback = document.getElementById('feedback');
 
@@ -854,7 +857,7 @@
 
                 document.getElementById('rewardBox').style.display = "flex";
             } else {
-                bloqueioCliques = true; // ATIVA A TRAVA IMEDIATAMENTE AO ERRAR
+                bloqueioCliques = true;
                 document.getElementById(`icon${numeroCaixa}`).innerText = "❌";
                 feedback.className = "feedback-msg erro";
                 feedback.innerText = "❌ A caixa está vazia! A dedução falhou.";
