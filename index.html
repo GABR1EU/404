@@ -641,10 +641,10 @@
         let caixaCorretaMaca = 1;
         let bloqueioCliques = false;
 
-        // CRONOGRAMA DE LIBERAÇÃO
+        // CRONOGRAMA DE LIBERAÇÃO (AJUSTADO: DIA 01 E DIA 02 JÁ DISPONÍVEIS)
         const CRONOGRAMA = {
-            1: { dataLiberacao: "2026-08-01" },
-            2: { dataLiberacao: "2026-08-02" },
+            1: { dataLiberacao: "2026-07-31" },
+            2: { dataLiberacao: "2026-08-01" },
             3: { dataLiberacao: "2026-08-03" }
         };
 
@@ -783,7 +783,7 @@
                 charadaBox.style.backgroundImage = `url('${URL_CHARADA_MOBILE}')`;
 
                 pin1.style.top = "42%"; pin1.style.left = "21%";
-                pin2.style.top = "32%"; pin2.style.left = "70%"; // POSIÇÃO DA PRAIA NO MOBILE (TOPO DIREITO)
+                pin2.style.top = "32%"; pin2.style.left = "70%";
                 pin3.style.top = "52%"; pin3.style.left = "45%";
             } else {
                 bgImg.src = URL_DESKTOP_BG;
@@ -792,7 +792,7 @@
                 charadaBox.style.backgroundImage = `url('${URL_CHARADA_DESKTOP}')`;
 
                 pin1.style.top = "36%"; pin1.style.left = "31%";
-                pin2.style.top = "16%"; pin2.style.left = "65%"; // POSIÇÃO DA PRAIA NO DESKTOP (TOPO DIREITO)
+                pin2.style.top = "16%"; pin2.style.left = "65%";
                 pin3.style.top = "50%"; pin3.style.left = "48%";
             }
         }
@@ -810,21 +810,14 @@
                 const pinEl = document.getElementById(`pin${dia}`);
                 const liberado = debugMode || (hoje >= CRONOGRAMA[dia]?.dataLiberacao);
 
-                if (debugMode) {
-                    pinEl.classList.add('visible');
+                // EXIBE OS PINOS DE FORMA DINÂMICA
+                pinEl.classList.add('visible');
+                if (liberado) {
                     pinEl.classList.remove('bloqueado');
                     pinEl.innerHTML = `<span class="pin-label">DIA ${dia < 10 ? '0'+dia : dia}</span>`;
-                } else if (dia === 1) {
-                    pinEl.classList.add('visible');
-                    if (liberado) {
-                        pinEl.classList.remove('bloqueado');
-                        pinEl.innerHTML = `<span class="pin-label">DIA 01</span>`;
-                    } else {
-                        pinEl.classList.add('bloqueado');
-                        pinEl.innerHTML = `<span class="pin-label">BLOQUEADO</span>🔒`;
-                    }
                 } else {
-                    pinEl.classList.remove('visible');
+                    pinEl.classList.add('bloqueado');
+                    pinEl.innerHTML = `<span class="pin-label">BLOQUEADO</span>🔒`;
                 }
             });
         }
