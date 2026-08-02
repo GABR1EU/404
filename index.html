@@ -815,10 +815,7 @@
                 if (liberado) {
                     pinEl.classList.remove('bloqueado');
                     pinEl.innerHTML = `<span class="pin-label">DIA ${dia < 10 ? '0'+dia : dia}</span>`;
-                } else {
-                    pinEl.classList.add('bloqueado');
-                    pinEl.innerHTML = `<span class="pin-label">BLOQUEADO</span>🔒`;
-                }
+                } 
             });
         }
 
