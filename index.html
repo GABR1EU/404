@@ -742,11 +742,11 @@
         let caixaCorretaMaca = 1;
         let bloqueioCliques = false;
 
-        // CRONOGRAMA DE LIBERAÇÃO (DIA 03 LIBERA EXATAMENTE ÀS 00:00 DO DIA 2026-08-03)
+        // CRONOGRAMA DE LIBERAÇÃO (CONFIGURADO PARA O DIA 03 DE AGOSTO DE 2026)
         const CRONOGRAMA = {
-            1: { dataLiberacao: "2026-07-31T00:00:00" },
-            2: { dataLiberacao: "2026-08-01T00:00:00" },
-            3: { dataLiberacao: "2026-08-03T00:00:00" }
+            1: { dataLiberacao: "2026-07-31" },
+            2: { dataLiberacao: "2026-08-01" },
+            3: { dataLiberacao: "2026-08-03" }
         };
 
         const CHARADAS = {
@@ -888,7 +888,7 @@
 
                 pin1.style.top = "42%"; pin1.style.left = "21%";
                 pin2.style.top = "32%"; pin2.style.left = "70%";
-                pin3.style.top = "51%"; pin3.style.left = "49%";
+                pin3.style.top = "52%"; pin3.style.left = "45%";
             } else {
                 bgImg.src = URL_DESKTOP_BG;
                 overlayImg.src = URL_DESKTOP_OVERLAY;
@@ -897,14 +897,15 @@
 
                 pin1.style.top = "36%"; pin1.style.left = "31%";
                 pin2.style.top = "16%"; pin2.style.left = "65%";
-                pin3.style.top = "50%"; pin3.style.left = "50%";
+                pin3.style.top = "50%"; pin3.style.left = "48%";
             }
         }
 
-        // RETORNA A DATA E HORA ATUAL DO BRASIL
-        function getAgoraBR() {
+        // RETORNA A DATA ATUAL EM FORMATO AAAA-MM-DD
+        function getHojeBR() {
             const agora = new Date();
-            return new Date(agora.getTime() - (3 * 60 * 60 * 1000));
+            const brTime = new Date(agora.getTime() - (3 * 60 * 60 * 1000));
+            return brTime.toISOString().split('T')[0];
         }
 
         function estaLiberado(dia) {
@@ -912,10 +913,8 @@
             const dataTargetStr = CRONOGRAMA[dia]?.dataLiberacao;
             if (!dataTargetStr) return false;
 
-            const agoraBR = getAgoraBR();
-            const dataTarget = new Date(dataTargetStr);
-
-            return agoraBR >= dataTarget;
+            const hojeBR = getHojeBR();
+            return hojeBR >= dataTargetStr;
         }
 
         function atualizarStatusPinos() {
