@@ -241,10 +241,10 @@
 
         .charada-subtexto {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 900;
             color: #000;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             border: 3px solid #000;
             border-radius: 12px;
             padding: 12px 16px;
@@ -252,6 +252,7 @@
             line-height: 1.4;
             max-width: 100%;
             box-shadow: 0 4px 0 #000;
+            white-space: pre-line;
         }
 
         .rule-badge {
@@ -381,12 +382,89 @@
             letter-spacing: 0.5px;
             margin-top: 4px;
             background: #fff;
-            padding: 6px 14px;
+            padding: 10px 16px;
             border-radius: 10px;
             border: 3px solid #000;
             box-shadow: 0 3px 0 #000;
             text-align: center;
             word-break: break-word;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 🎈 LAYOUT DO PRÊMIO COM ABEL FLUTUANDO */
+        .reward-abel-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            width: 100%;
+        }
+
+        .reward-text-content {
+            flex: 1;
+            line-height: 1.45;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+
+        .abel-floating-img {
+            max-width: 130px;
+            width: 100%;
+            filter: drop-shadow(0 6px 0 rgba(0,0,0,0.4));
+            animation: floatAnim 3s ease-in-out infinite;
+        }
+
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        /* 📸 TAMANHO DO QR CODE E EFEITO DE CLIQUE */
+        .qr-code-img {
+            max-width: 250px;
+            width: 100%;
+            border: 3.5px solid #000;
+            border-radius: 10px;
+            box-shadow: 0 4px 0 #000;
+            margin: 8px 0;
+            cursor: zoom-in;
+            transition: transform 0.2s ease;
+        }
+
+        .qr-code-img:hover {
+            transform: scale(1.04);
+        }
+
+        /* 🔍 MODAL DE IMAGEM EM TELA CHEIA (LIGHTBOX) */
+        .fullscreen-image-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            padding: 20px;
+            cursor: zoom-out;
+        }
+
+        .fullscreen-image-modal.active {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .fullscreen-image-content {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+            border: 5px solid #fff;
+            border-radius: 14px;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.3), 0 8px 0 #000;
+            cursor: default;
         }
 
         .input-group {
@@ -506,7 +584,7 @@
             }
 
             .charada-subtexto {
-                font-size: 0.78rem;
+                font-size: 0.72rem;
                 padding: 8px 10px;
                 margin-bottom: 10px;
             }
@@ -533,7 +611,20 @@
             }
 
             .rule-badge { font-size: 0.65rem; padding: 5px 8px; margin-bottom: 8px; }
-            .reward-phrase { font-size: 0.85rem; padding: 4px 8px; }
+            .reward-phrase { font-size: 0.78rem; padding: 6px 8px; }
+            .qr-code-img { max-width: 170px; }
+
+            .reward-abel-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .reward-text-content {
+                text-align: center;
+                font-size: 0.78rem;
+            }
+            .abel-floating-img {
+                max-width: 85px;
+            }
         }
     </style>
 </head>
@@ -557,6 +648,7 @@
 
             <div id="pin1" class="pin-point" onclick="tentarAbrirCharada(1)"></div>
             <div id="pin2" class="pin-point" onclick="tentarAbrirCharada(2)"></div>
+            <div id="pin3" class="pin-point" onclick="tentarAbrirCharada(3)"></div>
         </div>
     </div>
 
@@ -618,6 +710,12 @@
         </div>
     </div>
 
+    <!-- 🔍 MODAL 4: IMAGEM EM TELA CHEIA (LIGHTBOX) -->
+    <div id="modalImagemTelaCheia" class="fullscreen-image-modal" onclick="fecharImagemTelaCheia()">
+        <button class="close-btn" onclick="fecharImagemTelaCheia()">&times;</button>
+        <img id="imgTelaCheia" class="fullscreen-image-content" src="" alt="Imagem Ampliada" onclick="event.stopPropagation()">
+    </div>
+
     <script>
         // --- BLOQUEIO GLOBAL DE BOTÃO DIREITO E ATALHOS ---
         window.addEventListener('contextmenu', function(e) { e.preventDefault(); });
@@ -633,17 +731,22 @@
                 e.stopPropagation();
                 return false;
             }
+            if (e.key === 'Escape') {
+                fecharImagemTelaCheia();
+            }
         });
 
         let debugMode = false;
         let puzzleConcluido1 = false;
+        let etapaDia3 = 1;
         let caixaCorretaMaca = 1;
         let bloqueioCliques = false;
 
-        // CRONOGRAMA DE LIBERAÇÃO (APENAS DIAS 1 E 2)
+        // CRONOGRAMA DE LIBERAÇÃO (DIA 03 LIBERA EXATAMENTE ÀS 00:00 DO DIA 2026-08-03)
         const CRONOGRAMA = {
-            1: { dataLiberacao: "2026-07-31" },
-            2: { dataLiberacao: "2026-08-01" }
+            1: { dataLiberacao: "2026-07-31T00:00:00" },
+            2: { dataLiberacao: "2026-08-01T00:00:00" },
+            3: { dataLiberacao: "2026-08-03T00:00:00" }
         };
 
         const CHARADAS = {
@@ -656,6 +759,15 @@
                 subtexto: "A praia é um lugar bonito, o mar, a areia, tudo nela a torna especial, por isso quando nos sentimos bem a primeira coisa que fazermos é tirar uma foto para usar de capa em alguns lugares, eu gosto de praias...",
                 respostas: ["confiança", "confianca"],
                 fraseRecompensa: "68 65 32 83 85 65 32 65 74 85 68 65 32 80 65 82 65 32 69 78 67 79 78 84 82 65 82 32 79<br>Volte amanhã"
+            },
+            3: {
+                titulo: "📍 DIA 03 - BIBLIOTECA DE VERADE",
+                subtextoEtapa1: `"Painéis com data são lindos de se admirar,\nMas a cor roxa pode te enganar.\nNem tudo é o que parece ser,\nVocê está ansioso demais pra conseguir ver."\n\nCésar sempre comentava algo quando gostava, só não consigo me lembrar o que era`,
+                respostasEtapa1: ["comovente"],
+                subtextoEtapa2: `Parece que temos um Sherlock holmes aqui, eu particularmente sempre gostei mais do Watson\n\nEn quelle année est sorti mon livre préféré ?`,
+                respostasEtapa2: ["1851"],
+                pegadinhasEtapa2: ["1887", "1888"],
+                fraseRecompensa: `<div class="reward-abel-container"><div class="reward-text-content">O MOTIVO DE EU SER TÃO MARAVILHOSO hahaahah te peguei né? Ai eu me adoro. Enfim, achei justo passar pra dizer que eu peguei emprestado o livro novo da Pessy, e tá muito show de bola!!! Corre garantir o seu</div><img src="https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/006Abel.png" alt="Abel" class="abel-floating-img"></div>`
             }
         };
 
@@ -766,6 +878,7 @@
 
             const pin1 = document.getElementById('pin1');
             const pin2 = document.getElementById('pin2');
+            const pin3 = document.getElementById('pin3');
 
             if (eMobileReal) {
                 bgImg.src = URL_MOBILE_BG;
@@ -775,6 +888,7 @@
 
                 pin1.style.top = "42%"; pin1.style.left = "21%";
                 pin2.style.top = "32%"; pin2.style.left = "70%";
+                pin3.style.top = "51%"; pin3.style.left = "49%";
             } else {
                 bgImg.src = URL_DESKTOP_BG;
                 overlayImg.src = URL_DESKTOP_OVERLAY;
@@ -783,21 +897,31 @@
 
                 pin1.style.top = "36%"; pin1.style.left = "31%";
                 pin2.style.top = "16%"; pin2.style.left = "65%";
+                pin3.style.top = "50%"; pin3.style.left = "50%";
             }
         }
 
-        function getHojeBR() {
+        // RETORNA A DATA E HORA ATUAL DO BRASIL
+        function getAgoraBR() {
             const agora = new Date();
-            const brTime = new Date(agora.getTime() - (3 * 60 * 60 * 1000));
-            return brTime.toISOString().split('T')[0];
+            return new Date(agora.getTime() - (3 * 60 * 60 * 1000));
+        }
+
+        function estaLiberado(dia) {
+            if (debugMode) return true;
+            const dataTargetStr = CRONOGRAMA[dia]?.dataLiberacao;
+            if (!dataTargetStr) return false;
+
+            const agoraBR = getAgoraBR();
+            const dataTarget = new Date(dataTargetStr);
+
+            return agoraBR >= dataTarget;
         }
 
         function atualizarStatusPinos() {
-            const hoje = getHojeBR();
-
-            [1, 2].forEach(dia => {
+            [1, 2, 3].forEach(dia => {
                 const pinEl = document.getElementById(`pin${dia}`);
-                const liberado = debugMode || (hoje >= CRONOGRAMA[dia]?.dataLiberacao);
+                const liberado = estaLiberado(dia);
 
                 pinEl.classList.add('visible');
                 if (liberado) {
@@ -858,6 +982,16 @@
             document.getElementById('modalAvisoCustom').classList.remove('active');
         }
 
+        /* 🔍 FUNÇÕES DE IMAGEM EM TELA CHEIA (LIGHTBOX) */
+        function abrirImagemTelaCheia(url) {
+            document.getElementById('imgTelaCheia').src = url;
+            document.getElementById('modalImagemTelaCheia').classList.add('active');
+        }
+
+        function fecharImagemTelaCheia() {
+            document.getElementById('modalImagemTelaCheia').classList.remove('active');
+        }
+
         function escolherCaixa(numeroCaixa) {
             if (puzzleConcluido1 || bloqueioCliques) return;
 
@@ -889,8 +1023,7 @@
         }
 
         function tentarAbrirCharada(dia) {
-            const hoje = getHojeBR();
-            const liberado = debugMode || (hoje >= CRONOGRAMA[dia]?.dataLiberacao);
+            const liberado = estaLiberado(dia);
 
             if (!liberado) {
                 exibirAvisoCustom("Este enigma ainda está bloqueado! Aguarde a data de liberação.");
@@ -917,6 +1050,17 @@
                     document.getElementById('rewardPhrase').innerHTML = dados.fraseRecompensa;
                     document.getElementById('rewardBox').style.display = "flex";
                 }
+            } else if (dia === 3) {
+                document.getElementById('ruleBadge').style.display = "none";
+                document.getElementById('puzzleCaixas').style.display = "none";
+                document.getElementById('rewardBox').style.display = "none";
+                
+                etapaDia3 = 1;
+                document.getElementById('charadaSubtexto').innerText = dados.subtextoEtapa1;
+                document.getElementById('charadaSubtexto').style.display = "block";
+                
+                document.getElementById('areaResposta').style.display = "flex";
+                document.getElementById('inputResposta').value = "";
             } else {
                 document.getElementById('ruleBadge').style.display = "none";
                 document.getElementById('puzzleCaixas').style.display = "none";
@@ -952,6 +1096,50 @@
                 return;
             }
 
+            if (diaAtualAberto === 3) {
+                const dados3 = CHARADAS[3];
+                if (etapaDia3 === 1) {
+                    const listaEtapa1 = dados3.respostasEtapa1.map(r => removerAcentos(r.toLowerCase()));
+                    if (listaEtapa1.includes(respostaTratada)) {
+                        etapaDia3 = 2;
+                        feedback.className = "feedback-msg sucesso";
+                        feedback.innerText = "🎉 RESPOSTA CORRETA! Próxima etapa liberada...";
+                        
+                        setTimeout(() => {
+                            feedback.innerText = "";
+                            feedback.className = "feedback-msg";
+                            
+                            const urlQrCode = "https://d1a9qnv764bsoo.cloudfront.net/stores/005/271/607/rte/QrCode.png";
+                            document.getElementById('charadaSubtexto').innerHTML = `Parece que temos um Sherlock holmes aqui, eu particularmente sempre gostei mais do Watson<br><br><img src="${urlQrCode}" alt="QR Code" class="qr-code-img" onclick="abrirImagemTelaCheia('${urlQrCode}')"><br><br>En quelle année est sorti mon livre préféré ?`;
+                            input.value = "";
+                        }, 1200);
+                    } else {
+                        feedback.className = "feedback-msg erro";
+                        feedback.innerText = "❌ Resposta incorreta... Pense mais um pouco!";
+                    }
+                } else if (etapaDia3 === 2) {
+                    const listaEtapa2 = dados3.respostasEtapa2.map(r => removerAcentos(r.toLowerCase()));
+                    const listaPegadinhas = dados3.pegadinhasEtapa2.map(r => removerAcentos(r.toLowerCase()));
+
+                    if (listaEtapa2.includes(respostaTratada)) {
+                        feedback.className = "feedback-msg sucesso";
+                        feedback.innerText = "🎉 INCRÍVEL! Caso 100% resolvido!";
+                        
+                        document.getElementById('rewardPhrase').innerHTML = dados3.fraseRecompensa;
+                        document.getElementById('rewardBox').style.display = "flex";
+                        document.getElementById('areaResposta').style.display = "none";
+                        document.getElementById('charadaSubtexto').style.display = "none";
+                    } else if (listaPegadinhas.includes(respostaTratada)) {
+                        feedback.className = "feedback-msg erro";
+                        feedback.innerText = "❌ Resposta errada, eu leria mais se fosse você";
+                    } else {
+                        feedback.className = "feedback-msg erro";
+                        feedback.innerText = "❌ Ano incorreto... Tente novamente!";
+                    }
+                }
+                return;
+            }
+
             const respostasAceitas = CHARADAS[diaAtualAberto].respostas.map(r => removerAcentos(r.toLowerCase()));
 
             if (respostasAceitas.includes(respostaTratada)) {
@@ -961,6 +1149,7 @@
                 document.getElementById('rewardPhrase').innerHTML = CHARADAS[diaAtualAberto].fraseRecompensa;
                 document.getElementById('rewardBox').style.display = "flex";
                 document.getElementById('areaResposta').style.display = "none";
+                document.getElementById('charadaSubtexto').style.display = "none";
             } else {
                 feedback.className = "feedback-msg erro";
                 feedback.innerText = "❌ Resposta incorreta... Pense mais um pouco!";
